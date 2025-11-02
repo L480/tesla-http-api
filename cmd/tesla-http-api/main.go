@@ -45,13 +45,19 @@ func router(next http.Handler) http.Handler {
 			}
 		case "api":
 			if apiTokenEnabled {
+				// Accept Authorization header or the legacy/custom X-Authorization
 				token := r.Header.Get("Authorization")
+				if token == "" {
+					token = r.Header.Get("X-Authorization")
+				}
 				if token != apiToken {
 					logger.Info("Request to %s from %s \033[31m(invalid token)\033[0m", r.URL.Path, r.Header.Get("X-Forwarded-For"))
 					http.Error(w, http.StatusText(403), http.StatusForbidden)
 					return
 				}
+				// Remove any provided auth headers so we can inject the Tesla Bearer token cleanly
 				r.Header.Del("Authorization")
+				r.Header.Del("X-Authorization")
 			}
 
 			r.Header.Add("Authorization", "Bearer "+tesla.AccessToken)
