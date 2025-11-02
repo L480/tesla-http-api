@@ -25,3 +25,4 @@ go.work
 refresh-token
 *.pem
 *.sh
+tesla-http-api
